@@ -3,13 +3,15 @@ var batshit = {};
 
 // in-page routing
 
+batshit.meta  = function (attr){
+    var metas = document.getElementsByTagName('meta');
+    for (var x=0,y=metas.length; x<y; x++) {
+        if (metas[x].name == attr) return metas[x].content;
+    }
+};
+
 batshit.parse_my_url = function(){
-    var route = (function (attr){
-        var metas = document.getElementsByTagName('meta');
-        for (var x=0,y=metas.length; x<y; x++) {
-            if (metas[x].name == attr) return metas[x].content;
-        }
-    })('route');
+    var route = batshit.meta('route');
     var assignments = [];
     var regex = route.replace(/:(\w+)/, function(m) {
         console.log(m.slice(1));
@@ -117,41 +119,44 @@ function mikrotemplate(el, obj_or_array, id_pfx){
 
 // firebase stuff (flaming bat shit)
 
+var F, facebook_id, facebook_name, current_user_id, on_auth, fb_auth;
 
+batshit.setup_firebase = function () {
+    if (!F) F = new Firebase(batshit.meta('firebase'));
+};
 
-var F = new Firebase('https://lifestyles.firebaseio.com');
-var facebook_id, current_user_id, on_auth, m;
-var auth = new FirebaseSimpleLogin(F, function(error, user) {
-    if (error) return alert(error);
-    if (user) {
-        current_user_id = user.uid;
-        facebook_id = user.id;
-        facebook_name = user.displayName;
-        F.child('users').child(user.uid).update({
-            name: user.displayName,
-            facebook_id: facebook_id
-        });
-    }
-    if (window.on_auth_ready) window.on_auth_ready();
-    window.auth_ready = true;
-});
+batshit.authenticate = function (cb) {
+    batshit.setup_firebase();
+    window.on_auth_ready = cb;
+    fb_auth = new FirebaseSimpleLogin(F, function(error, user) {
+        if (error) return alert(error);
+        if (user) {
+            current_user_id = user.uid;
+            facebook_id = user.id;
+            facebook_name = user.displayName;
+            F.child('users').child(user.uid).update({
+                name: user.displayName,
+                facebook_id: facebook_id
+            });
+        }
+        if (window.on_auth_ready) window.on_auth_ready();
+        window.auth_ready = true;
+    });
+};
+
+batshit.please_login = function  () {
+    alert('Please login with facebook to complete this action!');
+    auth.login('facebook', { rememberMe: true });
+};
+
 function fb(){
     var args = Array.prototype.slice.call(arguments);
     var str = args.shift();
     var path = str.replace(/%/g, function(m){ return args.shift(); });
     return F.child(path);
 }
-function login(){ auth.login('facebook', { rememberMe: true }); }
 
 
-function when_auth_ready(cb){
-    if (window.auth_ready) cb();
-    else window.on_auth_ready = cb;
-}
-
-function please_login () {
-    alert('please_login');
-}
 
 
 

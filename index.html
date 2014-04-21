@@ -1,12 +1,13 @@
-<title>deadbook</title>
+<title>for the dead...</title>
 <meta name="route" content="/deadguy/:dead_person_id">
+<meta name="firebase" content="https://forthedead.firebaseio.com">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0,minimal-ui" />
 <link rel="stylesheet" href="deadbook.css" type="text/css">
 
 <div id="deadguy">
-    <img data-set="src:imgsrc" alt="" /><br>
+    <img data-set="src:imgsrc" /><br>
     in memory of...
-    <h1 data-set="text:name">dead persons name</h1>
+    <h1 data-set="text:name">loading...</h1>
 </div>
 
 <div id="photo_upload">
@@ -15,18 +16,20 @@
 </div>
 
 <h4> various good deeds have been done...</h4>
-<form id="newdeed">
-    <textarea placeholder="did you do something today to honor this dead person?" id="deedfield"></textarea>
-    <button>add this deed</button>
-</form>
+<section>
+    <form id="newdeed">
+        <textarea placeholder="did you do something today to honor this dead person?" id="deedfield"></textarea>
+        <button>add this deed</button>
+    </form>
 
-<div id="deeds">
-    <div class="deed">
-        <h2 data-set="text:doer"></h2>
-        In honor of the dead person, here's what they did:
-        <p data-set="text:what"></p>
+    <div id="deeds">
+        <div class="deed">
+            <h2 data-set="text:doer"></h2>
+            In honor of the dead person, here's what they did:
+            <p data-set="text:what"></p>
+        </div>
     </div>
-</div>
+</section>
 
 <hr><button id="new_dead_guy">Add your dead friend or relative</button> to our archive.
 
@@ -43,6 +46,7 @@
 
 
 batshit.parse_my_url();
+batshit.authenticate();
 
 fb('deadguys/%', dead_person_id).paint('#deadguy');
 fb('deeds/%', dead_person_id).paint_list('#deeds');
@@ -51,12 +55,12 @@ batshit.button('#new_dead_guy', function () {
     var name = prompt('whats the dead guys name?');
     if (!name) return;
     var newguy = fb('deadguys').push({ name: name }).name();
-    window.location = '/deadguy/' + newguy;
+    window.location = '?/deadguy/' + newguy;
 })
 batshit.input('#deedfield', function (typed) {
     if (!current_user_id) return please_login();
     fb('deeds/%', dead_person_id).push({
-        doer: current_user_name,
+        doer: facebook_name,
         what: typed
     });
 });
