@@ -58,7 +58,7 @@ batshit.button('#new_dead_guy', function () {
     window.location = '?/deadguy/' + newguy;
 })
 batshit.input('#deedfield', function (typed) {
-    if (!current_user_id) return please_login();
+    if (!current_user_id) return batshit.please_login();
     fb('deeds/%', dead_person_id).push({
         doer: facebook_name,
         what: typed

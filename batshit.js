@@ -119,7 +119,7 @@ function mikrotemplate(el, obj_or_array, id_pfx){
 
 // firebase stuff (flaming bat shit)
 
-var F, facebook_id, facebook_name, current_user_id, on_auth, fb_auth;
+var F, facebook_id, facebook_name, current_user_id, on_auth, firebase_auth;
 
 batshit.setup_firebase = function () {
     if (!F) F = new Firebase(batshit.meta('firebase'));
@@ -128,7 +128,7 @@ batshit.setup_firebase = function () {
 batshit.authenticate = function (cb) {
     batshit.setup_firebase();
     window.on_auth_ready = cb;
-    fb_auth = new FirebaseSimpleLogin(F, function(error, user) {
+    firebase_auth = new FirebaseSimpleLogin(F, function(error, user) {
         if (error) return alert(error);
         if (user) {
             current_user_id = user.uid;
@@ -146,7 +146,7 @@ batshit.authenticate = function (cb) {
 
 batshit.please_login = function  () {
     alert('Please login with facebook to complete this action!');
-    auth.login('facebook', { rememberMe: true });
+    firebase_auth.login('facebook', { rememberMe: true });
 };
 
 function fb(){
