@@ -1,0 +1,68 @@
+<title>deadbook</title>
+<meta name="route" content="/deadguy/:dead_person_id">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0,minimal-ui" />
+<link rel="stylesheet" href="deadbook.css" type="text/css">
+
+<div id="deadguy">
+    <img data-set="src:imgsrc" alt="" /><br>
+    in memory of...
+    <h1 data-set="text:name">dead persons name</h1>
+</div>
+
+<div id="photo_upload">
+    upload a photo
+    <input type="file" accept="image/*" capture="camera" id="upload">
+</div>
+
+<h4> various good deeds have been done...</h4>
+<form id="newdeed">
+    <textarea placeholder="did you do something today to honor this dead person?" id="deedfield"></textarea>
+    <button>add this deed</button>
+</form>
+
+<div id="deeds">
+    <div class="deed">
+        <h2 data-set="text:doer"></h2>
+        In honor of the dead person, here's what they did:
+        <p data-set="text:what"></p>
+    </div>
+</div>
+
+<hr><button id="new_dead_guy">Add your dead friend or relative</button> to our archive.
+
+<!-- ________________________________________ -->
+
+
+<script src='https://cdn.firebase.com/v0/firebase.js'></script>
+<script src='https://cdn.firebase.com/js/simple-login/1.2.3/firebase-simple-login.js'></script>
+<script src="batshit.js"></script>
+<script>
+
+
+//   ________________________________________
+
+
+batshit.parse_my_url();
+
+fb('deadguys/%', dead_person_id).paint('#deadguy');
+fb('deeds/%', dead_person_id).paint_list('#deeds');
+
+batshit.button('#new_dead_guy', function () {
+    var name = prompt('whats the dead guys name?');
+    if (!name) return;
+    var newguy = fb('deadguys').push({ name: name }).name();
+    window.location = '/deadguy/' + newguy;
+})
+batshit.input('#deedfield', function (typed) {
+    if (!current_user_id) return please_login();
+    fb('deeds/%', dead_person_id).push({
+        doer: current_user_name,
+        what: typed
+    });
+});
+batshit.dataupload('#upload', function (as_data_url) {
+    fb('deadguys/%/imgsrc', dead_person_id).set(as_data_url);
+});
+
+
+</script>
