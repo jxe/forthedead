@@ -3,8 +3,6 @@ img {
     text-align:center;
 }
 
-
-
 textarea {
     width: 100%;
     text-align: center;
@@ -26,10 +24,15 @@ body {
     width: 100px;
 }
 
-h1 {
+h1, h2 {
     margin: 0px;
 }
 
 hr {
     margin-top: 50px;
+}
+
+.deed p {
+    background: #ddd;
+    padding: 10px;
 }
