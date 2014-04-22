@@ -2,14 +2,12 @@
 
 var Firebase = require('firebase'),
     http   = require('http'),
-    stripe = require('stripe'),
+    stripe = require('stripe')(process.env.STRIPE_SECRET_KEY),
     fbutil   = require('./fbutil'),
     fburl = 'https://' + process.env.FB_NAME + '.firebaseio.com/',
     express = require('express'),
     app = express();
 
-
-stripe.setApiKey(process.env.STRIPE_SECRET_KEY);
 
 fbutil.auth(fburl, process.env.FB_TOKEN).done(function() {
    var  F = new Firebase(fburl);
