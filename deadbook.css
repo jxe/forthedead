@@ -8,7 +8,7 @@ img {
 /*    margin-top: 30px;*/
 }
 
-body{ margin: 10px; font-family: helvetica; }
+body{ margin: 10px; font-family: helvetica; max-width: 500px; }
 form{ margin: 0; }
 .row{ display: -webkit-flex; display: flex; position: relative; }
 .expando{ -webkit-flex: auto; flex: auto; }
