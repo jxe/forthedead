@@ -1,0 +1,5 @@
+- set page.title to name of deadguy for browser history
+- grab their email from facebook to prefill the stripe form (and put it in fb)
+- todo: buyer fb email
+- todo: send a confirmation email about the trees being on thier way
+- todo: tree fulfillment flow

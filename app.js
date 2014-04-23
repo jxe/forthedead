@@ -19,17 +19,33 @@ fbutil.auth(fburl, process.env.FB_TOKEN).done(function() {
    app.use(express.bodyParser());
 
    app.post('/buy_trees', function(req, res){
-       var stripeToken = req.body.stripeToken;
+       var stripeToken = req.body.tokenid;
+       console.log(req.body);
+
        var charge = stripe.charges.create({
-           amount: 2000, // amount in cents, again
+           amount: req.body.amount, // amount in cents, again
            currency: "usd",
            card: stripeToken,
-           description: "FBID bought X trees for DEADGUYID"
+           description: req.body.facebook_name + " bought " + req.body.trees + " trees for " + req.body.deadguy_id,
+           metadata: {
+               email: req.body.email,
+               trees: req.body.trees,
+               facebook_name: req.body.facebook_name,
+               current_user_id: req.body.current_user_id,
+               deadguy_name: req.body.deadguy_name,
+               deadguy_id: req.body.deadguy_id
+           }
        }, function(err, charge) {
            if (err && err.type === 'StripeCardError') {
-               // The card has been declined
+               res.send(400, 'Card error');
            } else {
-               // add the trees!
+               F.child('deeds').child(req.body.deadguy_id).push({
+                   doer_id: req.body.current_user_id,
+                   doer: req.body.facebook_name,
+                   what: 'planted ' + req.body.trees + ' trees in their honor',
+                   type: 'trees'
+               });
+               res.send('OK trees planted');
            }
        });
    });

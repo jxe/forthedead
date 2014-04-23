@@ -30,17 +30,28 @@ batshit.parse_my_url = function(){
 
 // building blocks
 
-batshit.$ = function(x){
-    if (x.on || x.addEventListener) return x;
-    return (batshit.focus || document).querySelector(x);
+batshit.$ = function(x, fn){
+    if (x.on || x.addEventListener) return fn ?  fn(x) : x;
+    if (!fn) return (batshit.focus || document).querySelector(x);
+    var els = (batshit.focus || document).querySelectorAll(x);
+    for (var i = 0; i < els.length; i++) fn(els[i]);
 };
 
-batshit.on = function(el, ev, c){
-    el = batshit.$(el);
-    if (!batshit.focus) batshit.focus = document.body;
-    if (!batshit.focus.unshow_fns) batshit.focus.unshow_fns = [];
-    batshit.focus.unshow_fns.push(function(){ if (el.off) el.off(ev,c); else el.removeEventListener(ev,c); });
-    if (el.on) el.on(ev, c); else el.addEventListener(ev, c);
+batshit.on = function(el, ev, c, blame){
+    batshit.$(el, function(el){
+        var blamed = blame || (el.addEventListener ? el : (batshit.focus||document.body));
+        if (!el.on){ el.on = el.addEventListener; el.off = el.removeEventListener; }
+        if (!blamed.listeners) {
+            blamed.listeners = {};
+            blamed.addEventListener('unwire', function(ev){
+                for (var k in blamed.listeners) blamed.listeners[k]();
+                blamed.listeners = {};
+            });
+        }
+        if (blamed.listeners[ev]) blamed.listeners[ev]();
+        blamed.listeners[ev] = function() { el.off(ev, c); };
+        el.on(ev, c);
+    });
 };
 
 
@@ -68,6 +79,76 @@ batshit.on = function(el, ev, c){
             reader.readAsDataURL(f);
         });
     };
+
+    batshit.object = function (el, o, calcfns) {
+        if (calcfns) for (var k in calcfns) o[k] = calcfns[k](o);
+        mikrotemplate($(el), o);
+    };
+
+    batshit.tabs = function (el, tabnames, onchange, default_tab) {
+        el = $(el);
+        var array = tabnames.map(function (n) { return {name: n}; });
+        mikrotemplate(el, array);
+        var children = el.childNodes;
+        var f = function(ev, tab_el){
+            if (!tab_el) tab_el = this;
+            var prev_selected = el.querySelectorAll('.selected');
+            Array.prototype.forEach.call(prev_selected, function(x){ x.setAttribute('class', ''); });
+            tab_el.setAttribute('class', 'selected');
+            onchange( tab_el.data.name, ev );
+        };
+        for (var i = children.length - 1; i >= 0; i--){
+            children[i].onclick = f;
+            if (children[i].data.name == default_tab) f(null, children[i]);
+        }
+    };
+
+    batshit.hidable = function(el, shown){
+        el = $(el);
+        el.show = function(shown){
+            if (!shown){
+                el.classList.add('hiding');
+                el.classList.add('hidden');
+                el.style.display = 'none';
+                el.classList.remove('hiding');
+            } else {
+                el.classList.add('revealing');
+                el.style.display = '';
+                el.classList.remove('revealing');
+                el.classList.add('revealed');
+            }
+        };
+        el.show(shown);
+    };
+
+    batshit.toggle = function(el, does, start_state){
+        el = $(el);
+        var state = start_state;
+        el.state = function(s, ev){
+            state = s;
+            if (state) el.classList.add('on');
+            else el.classList.remove('on');
+            does(state, el, ev);
+        };
+        on(el, 'click', function (ev) {
+            ev.preventDefault();
+            el.state(!state, ev);
+            return false;
+        });
+    };
+
+    batshit.list = function(el, array, onclick){
+        el = $(el);
+        el.render = function(array){
+            mikrotemplate(el, array);
+            if (!onclick) return;
+            var children = el.childNodes;
+            var f = function(ev){ onclick( this.data, ev, this ); };
+            for (var i = children.length - 1; i >= 0; i--) children[i].onclick = f;
+        };
+        if (array) el.render(array);
+    };
+
 })();
 
 
@@ -77,10 +158,11 @@ batshit.on = function(el, ev, c){
 
 function mikrotemplate(el, obj_or_array, id_pfx){
     function decorate_element(el, json){
-        var directives = el.getAttribute('data-set') ? el.getAttribute('data-set').split(' ') : [];
+        var directive_string = el.getAttribute('data-set');
+        var directives = directive_string ? directive_string.split(' ') : [];
         directives.forEach(function(word){
             var parts = word.split(':');
-            var attr = parts[0];
+            var attr = parts[1] ? parts[0] : 'text';
             var path = parts[1] || parts[0];
             if (attr == 'text')       el.innerHTML = json[path];
             else if (attr == 'value') el.value = json[path];
@@ -96,11 +178,10 @@ function mikrotemplate(el, obj_or_array, id_pfx){
     if (!id_pfx) id_pfx = '';
     if (!obj_or_array) return;
     if (!obj_or_array.forEach) return decorate_subtree(el, obj_or_array);
-    if (!mikrotemplate.templates) mikrotemplate.templates = {};
-    if (!mikrotemplate.templates[el.id]) mikrotemplate.templates[el.id] = el.firstElementChild.cloneNode(true);
+    if (!el.mikrotemplate) el.mikrotemplate = el.firstElementChild.cloneNode(true);
     el.innerHTML = "";
     obj_or_array.forEach(function(o){
-        var clone = mikrotemplate.templates[el.id].cloneNode(true);
+        var clone = el.mikrotemplate.cloneNode(true);
         clone.id = id_pfx + o.id;
         decorate_subtree(clone, o);
         el.appendChild(clone);
@@ -166,9 +247,10 @@ Firebase.prototype.paint = function(el, calcfns){
     el = batshit.$(el);
     batshit.on(ref, 'value', function(snap){
         var o = snap.val() || {};
+        o.id = snap.name();
         if (calcfns) for (var k in calcfns) o[k] = calcfns[k](o);
         mikrotemplate(el, o);
-    });
+    }, el);
 };
 
 
@@ -199,5 +281,5 @@ Firebase.prototype.paint_list = function(el, onclick, calcfns){
                 children[i].onclick = function(ev){ onclick( this.data, ev, this ); };
             }
         }
-    });
+    }, el);
 };
