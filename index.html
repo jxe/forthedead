@@ -58,10 +58,10 @@ fb('deadguys/%', dead_person_id).paint('#deadguy');
 fb('deeds/%', dead_person_id).paint_list('#deeds');
 
 batshit.button('#new_dead_guy', function () {
-    var name = prompt('whats the dead guys name?');
+    var name = prompt('Who died? What\'s their name?');
     if (!name) return;
     var newguy = fb('deadguys').push({ name: name }).name();
-    window.location = '?/deadguy/' + newguy;
+    window.location = '?/' + newguy;
 })
 batshit.input('#deedfield', function (typed) {
     if (!current_user_id) return batshit.please_login();
@@ -75,6 +75,7 @@ batshit.dataupload('#upload', function (as_data_url) {
 });
 
 
+// ________________________________________
 // $$$ moneys $$$
 
 
