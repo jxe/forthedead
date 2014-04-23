@@ -83,7 +83,7 @@ var trees = 0, amount = 0;
 
 var checkout = StripeCheckout.configure({
     key: 'pk_live_duyhtWRKe9K5Q4NFHa2MdlhC',
-    name: 'For the Dead (Trees)',
+    name: 'Plant Trees for the Dead',
     // image: '/square-image.png',
     token: function(token, args) {
         var request = new XMLHttpRequest();
@@ -105,7 +105,8 @@ var checkout = StripeCheckout.configure({
 function buy_trees(t, a){
     if (!current_user_id) return batshit.please_login();
     trees = t; amount = a;
-    checkout.open({ description: 'Plant ' + t + ' trees ($' + a/100 + '.00)', amount: a });
+    var name = batshit.$('#deadguy').data.name;
+    checkout.open({ description: t + ' trees, to be planted in memory of ' + name, amount: a });
 }
 
 batshit.button('#fiftytrees', function () { buy_trees(50, 1000); });
