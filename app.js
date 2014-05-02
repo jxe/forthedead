@@ -27,7 +27,7 @@ fbutil.auth(fburl, process.env.FB_TOKEN).done(function() {
        res.send(
          "<meta property='og:title' content='"+v.name+"'>" +
          "<meta property='og:title' content='"+v.imgsrc+"'>" +
-         "<meta property='og:url' content='"+req.url+"'>" +
+         "<meta property='og:url' content='"+ req.protocol + '://' + req.host +req.url+"'>" +
          "<meta property='og:site_name' content='Good Deeds for the Dead'>" +
          "<meta property='og:type' content='website'>"
        );
