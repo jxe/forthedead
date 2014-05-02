@@ -1,3 +1,6 @@
+- opengraph url is 
+
+
 - set page.title to name of deadguy for browser history
 - grab their email from facebook to prefill the stripe form (and put it in fb)
 - todo: buyer fb email
