@@ -19,7 +19,8 @@
 <div id="profile_page">
   <div id="photo_upload">
       upload a new photo
-      <input type="file" accept="image/*" capture="camera" id="upload">
+<!--       <input type="file" accept="image/*" capture="camera" id="upload"> -->
+      <input type="hidden" name="avatar" role="uploadcare-uploader" />
   </div>
 
   <div id="deadguy">
@@ -59,9 +60,11 @@
 <script src='https://cdn.firebase.com/v0/firebase.js'></script>
 <script src='https://cdn.firebase.com/js/simple-login/1.2.3/firebase-simple-login.js'></script>
 <script src="https://checkout.stripe.com/checkout.js"></script>
+<script src="https://ucarecdn.com/widget/1.0.1/uploadcare/uploadcare-1.0.1.min.js" charset="utf-8"></script>
 <script src="batshit.js"></script>
 <script>
 
+UPLOADCARE_PUBLIC_KEY = '52a7596058528784c773'
 
 //   ________________________________________
 
@@ -75,7 +78,7 @@ function share() {
 if (!window.dead_person_id){
   document.body.className = "index_page";
   fb('deadguys').paint_list('#deadguys', function (data) {
-    window.location = '?/' + data.id;
+    window.location = '/memorial/' + data.id;
   });
 } else {
   document.body.className = "profile_page";
@@ -98,9 +101,21 @@ batshit.button('#new_dead_guy', function () {
     var name = prompt('Who died? What\'s their name?');
     if (!name) return;
     var newguy = fb('deadguys').push({ name: name }).name();
-    window.location = '?/' + newguy;
+    window.location = '/memorial/' + newguy;
 })
 
+
+// uploads
+
+var widget = uploadcare.Widget('[role=uploadcare-uploader]');
+widget.onUploadComplete(function(info) {
+    var request = new XMLHttpRequest();
+    request.open('POST', '/keep', true);
+    var data = new FormData();
+    data.append('file_id', info.uuid);
+    request.send(data);
+    fb('deadguys/%/imgsrc', dead_person_id).set(info.cdnUrl);
+});
 
 // ________________________________________
 // $$$ moneys $$$

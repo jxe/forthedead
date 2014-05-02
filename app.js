@@ -6,7 +6,9 @@ var Firebase = require('firebase'),
     fbutil   = require('./fbutil'),
     fburl = 'https://' + process.env.FB_NAME + '.firebaseio.com/',
     express = require('express'),
+    uploadcare = require('uploadcare')(process.env.UPLOADCARE_KEY, process.env.UPLOADCARE_SECRET),
     app = express();
+
 
 
 fbutil.auth(fburl, process.env.FB_TOKEN).done(function() {
@@ -25,13 +27,24 @@ fbutil.auth(fburl, process.env.FB_TOKEN).done(function() {
          "<meta property='og:title' content='Good Deeds for "+v.name+"'>" +
          "<meta property='og:image' content='"+v.imgsrc+"'>" +
          "<meta property='og:url' content='"+ req.protocol + '://' + req.host +req.url+"'>" +
-         "<meta property='og:site_name' content='Deeds for the Dead'>" +
+         "<meta property='og:description' content='For those who remember "+v.name+":  a page to do good deeds in their honor'>" +
+         "<meta property='og:sit_name' content='Deeds for the Dead'>" +
          "<meta property='og:type' content='website'>"
        );
      });
    });
 
    app.use(express.static(__dirname));
+
+   app.post('/keep', function(req, res){
+      uploadcare.files.store(req.params.file_id, function(error, response) {
+        if(error) {
+          console.log('Error: ' + JSON.stringify(response));
+        } else {
+          console.log('Response: ' + JSON.stringify(response));
+        }
+      });
+   });
 
    app.post('/buy_trees', function(req, res){
        var stripeToken = req.body.tokenid;
