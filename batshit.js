@@ -21,8 +21,7 @@ batshit.parse_my_url = function(){
     regex += "$";
     var base = window.location.pathname + window.location.search;
     var m = base.match(regex);
-    if (!m) return alert('unrecognized path for: ' + route);
-    console.log(m);
+    if (!m) return;
     for (var x=0; x<assignments.length; x++) window[assignments[x]] = m[x+1];
 };
 

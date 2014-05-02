@@ -4,36 +4,50 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0,minimal-ui" />
 <link rel="stylesheet" href="deadbook.css" type="text/css">
 
-<div id="photo_upload">
-    upload a new photo
-    <input type="file" accept="image/*" capture="camera" id="upload">
+
+<div id="index_page">
+  <h2>Recently Added</h2>
+  <div id="deadguys">
+      <div class="individual">
+          <img data-set="src:imgsrc" /><br>
+          <b data-set="text:name"></b>
+      </div>
+  </div>
 </div>
 
-<div id="deadguy">
-    <img data-set="src:imgsrc" /><br>
-    In memory of
-    <b data-set="text:name">loading...</b><br>
-    various <b>good deeds</b> have been done:
-</div>
 
-<div id="deeds">
-    <div class="deed">
-        <h3><b data-set="text:doer"></b>'s good deed:</h3>
-        <p data-set="text:what"></p>
-    </div>
-</div>
+<div id="profile_page">
+  <div id="photo_upload">
+      upload a new photo
+      <input type="file" accept="image/*" capture="camera" id="upload">
+  </div>
 
-<section id="deedsection">
-    <form id="newdeed" class="row">
-        <input class="expando" placeholder="What have you done in their memory?" id="deedfield"></textarea>
-        <button>post</button>
-    </form>
-    <div id="trees">
-        Pay to plant trees:
-        <button id="fiftytrees">50 trees</button>
-        <button id="onefiftytrees">150 trees</button>
-    </div>
-</section>
+  <div id="deadguy">
+      <img data-set="src:imgsrc" /><br>
+      In memory of
+      <b data-set="text:name">loading...</b><br>
+      various <b>good deeds</b> have been done:
+  </div>
+
+  <div id="deeds">
+      <div class="deed">
+          <h3><b data-set="text:doer"></b>'s good deed:</h3>
+          <p data-set="text:what"></p>
+      </div>
+  </div>
+
+  <section id="deedsection">
+      <form id="newdeed" class="row">
+          <input class="expando" placeholder="What have you done in their memory?" id="deedfield"></textarea>
+          <button>post</button>
+      </form>
+      <div id="trees">
+          Pay to plant trees:
+          <button id="fiftytrees">50 trees</button>
+          <button id="onefiftytrees">150 trees</button>
+      </div>
+  </section>
+</div>
 
 <hr>
 <p><button id="new_dead_guy">Add your dead friend or relative</button> to our archive.
@@ -54,8 +68,31 @@
 batshit.parse_my_url();
 batshit.authenticate();
 
-fb('deadguys/%', dead_person_id).paint('#deadguy');
-fb('deeds/%', dead_person_id).paint_list('#deeds');
+function share() {
+  window.open('https://www.facebook.com/dialog/share?app_id=393978220744418&display=popup&href=http%3A%2F%2Fforthedead.org%2F');
+}
+
+if (!window.dead_person_id){
+  document.body.className = "index_page";
+  fb('deadguys').paint_list('#deadguys', function (data) {
+    window.location = '?/' + data.id;
+  });
+} else {
+  document.body.className = "profile_page";
+  fb('deadguys/%', dead_person_id).paint('#deadguy');
+  fb('deeds/%', dead_person_id).paint_list('#deeds');
+
+  batshit.input('#deedfield', function (typed) {
+      if (!current_user_id) return batshit.please_login();
+      fb('deeds/%', dead_person_id).push({
+          doer: facebook_name,
+          what: typed
+      });
+  });
+  batshit.dataupload('#upload', function (as_data_url) {
+      fb('deadguys/%/imgsrc', dead_person_id).set(as_data_url);
+  });
+}
 
 batshit.button('#new_dead_guy', function () {
     var name = prompt('Who died? What\'s their name?');
@@ -63,16 +100,6 @@ batshit.button('#new_dead_guy', function () {
     var newguy = fb('deadguys').push({ name: name }).name();
     window.location = '?/' + newguy;
 })
-batshit.input('#deedfield', function (typed) {
-    if (!current_user_id) return batshit.please_login();
-    fb('deeds/%', dead_person_id).push({
-        doer: facebook_name,
-        what: typed
-    });
-});
-batshit.dataupload('#upload', function (as_data_url) {
-    fb('deadguys/%/imgsrc', dead_person_id).set(as_data_url);
-});
 
 
 // ________________________________________

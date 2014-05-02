@@ -15,8 +15,27 @@ fbutil.auth(fburl, process.env.FB_TOKEN).done(function() {
    // app part
 
    app.use(express.logger());
-   app.use(express.static(__dirname));
    app.use(express.bodyParser());
+
+   app.get('/', function (req, res, next) {
+     if (!req.headers['user-agent'].match(/facebookexternalhit/)) return next();
+     var m = req.url.match(/\/\?\/(.*)$/);
+     if (!m) req.send('unrecognized bro');
+     console.log("match: ", m[1]);
+     F.child('deadguys').child(m[1]).once('value', function (snap) {
+       var v = snap.val();
+       res.send(
+         "<meta property='og:title' content='"+v.name+"'>" +
+         "<meta property='og:title' content='"+v.imgsrc+"'>" +
+         "<meta property='og:url' content='"+req.url+"'>" +
+         "<meta property='og:site_name' content='Good Deeds for the Dead'>" +
+         "<meta property='og:type' content='website'>"
+       );
+     });
+
+   });
+
+   app.use(express.static(__dirname));
 
    app.post('/buy_trees', function(req, res){
        var stripeToken = req.body.tokenid;

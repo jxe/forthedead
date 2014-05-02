@@ -99,3 +99,7 @@ h3{
     font-size: 18px;
     color: black;
 }
+
+
+body.profile_page #index_page{ display:none; }
+body.index_page #profile_page{ display:none; }
